@@ -1,5 +1,5 @@
 LogAndRotate
-____________
+============
 
 Small helper class for Perl Logging with integrated rotation using Unix Alarm Signal
 
@@ -7,6 +7,13 @@ Small helper class for Perl Logging with integrated rotation using Unix Alarm Si
 
 
 
+
+  
+  
+  
+
+License
+________
 Copyright (c) 2013, Alessandro Meyer
 All rights reserved.
 
