@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 use Time::localtime;
+use strict;
 
 
 # SIG Handlers
@@ -85,7 +86,7 @@ sub toggleSTD {
 
 sub mvLogFile {
 	 my $logFile = shift;
-	 $tm=localtime; 
+	 my $tm=localtime; 
 	 print $logFile . datePad($tm->hour) . ":" . datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900) ."\n";
 	 rename ($logFile, $logFile . datePad($tm->hour) . ":" . datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900)) || print("Could not move File \n");
 }
