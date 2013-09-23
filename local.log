@@ -1,9 +1,0 @@
-hhhhhhhhhhhhhhHHHHHHHH$VAR1 = [
-          {
-            'handle' => [
-                          *::STDOUT,
-                          *::STDERR
-                        ],
-            'orignalHandle' => 'origARRAY(0x7faa3b003ce8)'
-          }
-        ];
