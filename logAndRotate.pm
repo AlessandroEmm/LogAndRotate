@@ -12,23 +12,27 @@
 
 
         $self->{"logPath"}   = $params->{"logPath"};
-        my @rawHandles       = $params->{"fh"};
+        my $rawHandles       = $params->{"fh"};
         $self->{"handles"}   = [];
-
-        print(Dumper(@rawHandles));
+        
+        alarm(6);
         # SIG Handlers
-        $SIG{'ALRM'} = \&sigAlarmHandler;
         my $logMode = "file";
 
-        foreach my $handle ( @rawHandles )
+        foreach my $handle ( @$rawHandles )
         {
-            push($self->{"handles"}, { "orignalHandle"=>  "orig" . $handle, "handle" => $handle});
+            my $test;
+            #open $test, '>', $handle;
+            push($self->{"handles"}, { "orignalHandle"=>  $test, "handle" => $handle});
+        }
+        print Dumper($self->{"handles"});
+
+        # have them handles
+        foreach my $handle ( @{$self->{"handles"} } )
+        {
+            open ${$handle}{'handle'}, '>', $self->{"logPath"};
         }
 
-
-        # redirect output to STD by default
-        open STDOUT, '>', $self->{"logPath"};
-        open STDERR, '>', $self->{"logPath"};
 
         bless($self);       # but see below
         return $self;
@@ -57,6 +61,15 @@
          print $self->{"logPath"} . datePad($tm->hour) . ":" . datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900) ."\n";
          rename ($self->{"logPath"}, $self->{"logPath"} . datePad($tm->hour) . ":" . datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900)) || print("Could not move File \n");
     
+    }
+
+    sub sigAlarmHandler {
+        print "Handler called!\n";
+    }
+
+    sub sigAlarm {
+        my $self = shift;
+        $self->{"sigAlarm"};
     }
 
     1;  # so the require or use succeeds
