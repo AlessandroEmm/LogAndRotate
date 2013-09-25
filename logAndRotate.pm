@@ -12,25 +12,20 @@
 
 
         $self->{"logPath"}   = $params->{"logPath"};
-        my $rawHandles       = $params->{"fh"};
-        $self->{"handles"}   = [];
-        
-        alarm(6);
-        # SIG Handlers
-        my $logMode = "file";
+        $self->{"handles"}   = $params->{"fh"};
+        $self->{"interval"}  = $params->{"interval"} || 60;#*60*24;
+        print Dumper($params->{'fh'});
 
-        foreach my $handle ( @$rawHandles )
-        {
-            my $test;
-            #open $test, '>', $handle;
-            push($self->{"handles"}, { "orignalHandle"=>  $test, "handle" => $handle});
-        }
-        print Dumper($self->{"handles"});
+        # start alarm
+        alarm($self->{"interval"});
 
-        # have them handles
+        # set to FH to file handler
+        $self->{"logMode"} = "file";
+
+        # have them handles 
         foreach my $handle ( @{$self->{"handles"} } )
         {
-            open ${$handle}{'handle'}, '>', $self->{"logPath"};
+            open ${$handle}{'fh'}, '>', $self->{"logPath"};
         }
 
 
@@ -50,10 +45,6 @@
         return @{ $self->{"logPath"} };
     }
 
-    sub handles {
-        my $self = shift;
-        return $self->{"handles"} ;
-    }
 
     sub mvLogFile {
          my $self = shift;
@@ -64,12 +55,44 @@
     }
 
     sub sigAlarmHandler {
-        print "Handler called!\n";
-    }
-
-    sub sigAlarm {
         my $self = shift;
-        $self->{"sigAlarm"};
+        print "Handler called!\n";
+        # switch to Terminal Output
+        $self->toggleOutput;
+        $self->mvLogFile;
+        # switch to Terminal Output
+        $self->toggleOutput;
+        # set next alarm
+        alarm($self->{"interval"});
     }
 
-    1;  # so the require or use succeeds
+    sub toggleOutput{
+        my $self = shift;
+
+        if ( $self->{"logMode"} eq "file"){
+            $self->{"logMode"} = "term";
+            print  $self->{"logMode"} . " LOG MODE\n";
+            foreach my $handle ( @{$self->{"handles"} } ){
+                close(${$handle}{'fh'});
+                open(${$handle}{'fh'}, ">&", ${$handle}{'origFh'});
+            }
+        }
+        # logMode
+        else { 
+            $self->{"logMode"} = "file";
+            print  $self->{"logMode"} . " LOG MODE\n";
+            foreach my $handle ( @{$self->{"handles"} } ) {
+                close(${$handle}{'fh'});
+                open(${$handle}{'fh'}, ">&", ${$handle}{'origFh'});
+                open(${$handle}{'fh'}, ">", $self->{"logFile"});
+            }
+    }
+    sub datePad {
+            my $pad = shift;
+            my $paddingSize = 2;
+            if (length($pad) != $paddingSize) {$pad = "0" . $pad;}
+            $pad;
+        }
+}
+
+1;  # so the require or use succeeds

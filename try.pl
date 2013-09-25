@@ -2,12 +2,20 @@ use logAndRotate;
 use Data::Dumper;	
 use strict;
 
-my $log = logAndRotate->new( {"logPath"=>"local.log", "fh"=>[*STDOUT, *STDERR] });
-$SIG{ALRM} = sub {print "LLLLlLLL\n";$log->sigAlarmHandler; alarm(60)};
+#### Init block
+#
+# Copy the handles to preserve them for later switching
+#
+#keep original Filehandles
+open(OLDOUT, ">&STDOUT");
+open(OLDERR, ">&STDERR");
+my $log = logAndRotate->new( {"logPath"=>"local.log", "fh"=>[{"fh"=>*STDOUT, "origFh" => *OLDOUT }, {"fh"=>*STDERR, "origFh" => *OLDERR }]  });
+$SIG{ALRM} = sub {print "LLLLlLLL\n";$log->sigAlarmHandler;};
 
 while (1){
 	sleep 5;
-	print "hhhhhhhhhhhhhh\n";
-	#print Dumper($log);
+	print "Yet a Line\n";
+	print Dumper($log);
 	sleep 6;
+
 }
