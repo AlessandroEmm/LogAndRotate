@@ -1,20 +1,19 @@
  package logAndRotate;
  use strict;
  use Time::localtime;
- use Data::Dumper;
+
     ##################################################
-    ## the object constructor ##
+    ## constructor 
     ##################################################
     sub new {
         my($class) = shift;
         my($self) = {};
         my($params) = @_[0];
 
-
+        
         $self->{"logPath"}   = $params->{"logPath"};
         $self->{"handles"}   = $params->{"fh"};
         $self->{"interval"}  = $params->{"interval"} || 60;#*60*24;
-        print Dumper($params->{'fh'});
 
         # start alarm
         alarm($self->{"interval"});
@@ -33,10 +32,7 @@
         return $self;
     }
     ##############################################
-    ## methods to access per-object data        ##
-    ##                                          ##
-    ## With args, they set the value.  Without  ##
-    ## any, they only retrieve it/them.         ##
+    ## Methods
     ##############################################
 
     sub logPath {
@@ -45,54 +41,48 @@
         return @{ $self->{"logPath"} };
     }
 
-
-    sub mvLogFile {
+    sub __mvLogFile {
          my $self = shift;
          my $tm=localtime; 
-         print $self->{"logPath"} . datePad($tm->hour) . ":" . datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900) ."\n";
-         rename ($self->{"logPath"}, $self->{"logPath"} . datePad($tm->hour) . ":" . datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900)) || print("Could not move File \n");
+         rename ($self->{"logPath"}, $self->{"logPath"} . "." . __datePad($tm->hour) . ":" . __datePad($tm->min) . "_". $tm->mday ."-" .  ($tm->mon+1) ."-". ($tm->year+1900)) || print("Could not move File \n");
     
     }
 
     sub sigAlarmHandler {
         my $self = shift;
-        print "Handler called!\n";
         # switch to Terminal Output
-        $self->toggleOutput;
-        $self->mvLogFile;
+        $self->__toggleOutput;
+        $self->__mvLogFile;
         # switch to Terminal Output
-        $self->toggleOutput;
+        $self->__toggleOutput;
         # set next alarm
         alarm($self->{"interval"});
     }
 
-    sub toggleOutput{
+    sub __toggleOutput{
         my $self = shift;
 
         if ( $self->{"logMode"} eq "file"){
             $self->{"logMode"} = "term";
-            print  $self->{"logMode"} . " LOG MODE\n";
             foreach my $handle ( @{$self->{"handles"} } ){
                 close(${$handle}{'fh'});
                 open(${$handle}{'fh'}, ">&", ${$handle}{'origFh'});
             }
         }
-        # logMode
         else { 
             $self->{"logMode"} = "file";
-            print  $self->{"logMode"} . " LOG MODE\n";
             foreach my $handle ( @{$self->{"handles"} } ) {
                 close(${$handle}{'fh'});
                 open(${$handle}{'fh'}, ">&", ${$handle}{'origFh'});
-                open(${$handle}{'fh'}, ">", $self->{"logFile"});
+                open(${$handle}{'fh'}, ">",  $self->{"logPath"});
             }
     }
-    sub datePad {
+
+    sub __datePad {
             my $pad = shift;
-            my $paddingSize = 2;
-            if (length($pad) != $paddingSize) {$pad = "0" . $pad;}
-            $pad;
-        }
+            if (length($pad) == 1) {"0" . $pad;}
+            else { $pad; }
+    }
 }
 
 1;  # so the require or use succeeds
